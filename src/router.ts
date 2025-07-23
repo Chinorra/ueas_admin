@@ -102,6 +102,26 @@ const router = createRouter({
           name: "profile",
           component: () => import("@/views/ProfileView.vue"),
         },
+        {
+          path: "/services/:id",
+          name: "ServiceDetail",
+          component: () => import("@/views/ServiceDetail.vue"),
+        },
+        {
+          path: '/customers/:id',
+          name: 'CustomerDetail',
+          component: () => import('@/views/CustomerDetail.vue'),
+        },
+        {
+          path: '/services/new',
+          name: 'ServiceCreate',
+          component: () => import('@/views/ServiceCreate.vue')
+        },
+        {
+          path: '/customers/new',
+          name: 'CustomerCreate',
+          component: () => import('@/views/CustomerCreate.vue')
+        }
       ],
     },
   ],

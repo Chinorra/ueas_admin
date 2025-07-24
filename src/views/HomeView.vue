@@ -29,6 +29,16 @@ onMounted(async () => {
   <div v-else-if="error" class="text-red-500">{{ error }}</div>
   <div v-else>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- ➕ Add New Service Card -->
+      <router-link
+        to="/services/new"
+        class="border-2 border-dashed border-gray-300 rounded-xl p-4 shadow flex flex-col justify-center items-center text-gray-400 hover:bg-gray-50 transition hover:scale-[1.02]"
+      >
+        <span class="text-5xl">＋</span>
+        <p class="mt-2 font-semibold">Thêm dịch vụ</p>
+      </router-link>
+
+      <!-- Service Cards -->
       <router-link
         v-for="service in services"
         :key="service.id"
@@ -45,6 +55,7 @@ onMounted(async () => {
     </div>
   </div>
 </template>
+
 
 
 

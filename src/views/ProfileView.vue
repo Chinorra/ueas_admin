@@ -1,38 +1,32 @@
 <script setup lang="ts">
+import { ref } from "vue";
 import { supabase } from "@/services/supabase";
 import { User } from "@supabase/supabase-js";
 
-const user = supabase.auth.user() as User;
-const metadata = user.user_metadata;
-const name = ref(metadata?.nickname || user.email);
+// Get session from supabase.auth.getSession()
+const {
+  data: { session },
+} = await supabase.auth.getSession();
+
+const user = session?.user as User;
+const metadata = user?.user_metadata;
+const name = ref(metadata?.nickname || user?.email || "");
 
 const password = ref("");
 const nickname = ref(name.value);
 
 const loading = ref(false);
 
-/* Change Password */
+/* Change Password (v2 style) */
 async function changePassword() {
   loading.value = true;
-  const { error } = await supabase.auth.update({
+
+  const { error } = await supabase.auth.updateUser({
     password: password.value,
   });
-  alert(error?.message || "password successfully changed");
-  password.value = "";
-  loading.value = false;
-}
 
-/* Change Nickname */
-async function changeNickname() {
-  loading.value = true;
-  const { error } = await supabase.auth.update({
-    data: { nickname: nickname.value },
-  });
-  if (error) alert(error.message);
-  else {
-    alert("nickname successfully changed");
-    name.value = nickname.value;
-  }
+  alert(error?.message || "Password successfully changed");
+  password.value = "";
   loading.value = false;
 }
 </script>
@@ -42,10 +36,7 @@ async function changeNickname() {
   <p class="mb-4 text-xl">Hi, {{ name }}</p>
 
   <div class="inline-grid grid-cols-1 gap-8 md:grid-cols-2">
-    <form
-      class="inline-flex flex-col space-y-2"
-      @submit.prevent="changePassword"
-    >
+    <form class="inline-flex flex-col space-y-2" @submit.prevent="changePassword">
       <VLabel for="password">Change your password</VLabel>
       <VPasswordInput
         :disabled="loading"
@@ -56,22 +47,6 @@ async function changeNickname() {
         placeholder="Choose a new password"
       />
       <VButton :disabled="loading" class="bg-teal-700">Change Password</VButton>
-    </form>
-    <form
-      class="inline-flex flex-col space-y-2"
-      @submit.prevent="changeNickname"
-    >
-      <VLabel for="nickname">Change your nickname</VLabel>
-      <VInput
-        :disabled="loading"
-        required
-        v-model="nickname"
-        class="inline-block"
-        name="nickname"
-        id="nickname"
-        placeholder="Choose a new nickname"
-      />
-      <VButton :disabled="loading" class="bg-teal-700">Change Nickname</VButton>
     </form>
   </div>
 </template>

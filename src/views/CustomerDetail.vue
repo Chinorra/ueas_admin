@@ -89,21 +89,43 @@
     }
     }
 
-        const deleteCustomer = async () => {
-        const confirmDelete = confirm('Are you sure you want to delete this customer?')
-        if (!confirmDelete) return
+    const deleteCustomer = async () => {
+  const confirmDelete = confirm('Are you sure you want to delete this customer?')
+  if (!confirmDelete) return
 
-        const { error: deleteError } = await supabase
-            .from('customers')
-            .delete()
-            .eq('id', customer.value.id)
+  error.value = null
 
-        if (deleteError) {
-            error.value = deleteError.message
-        } else {
-            router.push('/customers') // Redirect to customer list or home
-        }
-        }
+  // 🧠 Extract the file path from the full public URL
+  const imageUrl = customer.value.image
+  const imagePath = imageUrl?.split('/storage/v1/object/public/image/')[1]
+        console.log(imagePath);
+  // 🗑️ Delete the image from Supabase Storage
+  if (imagePath) {
+    const { error: storageError } = await supabase
+      .storage
+      .from('image') // bucket name
+      .remove([imagePath])
+
+    if (storageError) {
+      console.error('Failed to delete image:', storageError.message)
+      error.value = 'Failed to delete image from storage.'
+      return
+    }
+  }
+
+  // 🗑️ Delete the customer from the database
+  const { error: deleteError } = await supabase
+    .from('customers')
+    .delete()
+    .eq('id', customer.value.id)
+
+  if (deleteError) {
+    error.value = deleteError.message
+  } else {
+    router.back() // ✅ Redirect
+  }
+}
+
 
         onMounted(async () => {
         const { id } = route.params

@@ -4,6 +4,10 @@
   import { useRoute } from 'vue-router'
 
   import { supabase } from '@/services/supabase'
+  import { useServiceStore } from '@/stores/serviceStore'
+
+const serviceStore = useServiceStore()
+const service = serviceStore.currentService
   
   const name = ref('')
   const job = ref('')
@@ -14,7 +18,6 @@
   const router = useRouter()
 
 const route = useRoute()
-  const serviceId = ref(route.query.service_id ?? null)
   
   const handleFileChange = (e) => {
     const file = e.target.files[0]
@@ -49,7 +52,7 @@ const route = useRoute()
       }
   
       const { data } = supabase.storage.from('image').getPublicUrl(filePath)
-      imageUrl = data.publicUrl
+      imageUrl = data.publicURL
     }
   
     // 2. Insert customer into database
@@ -61,7 +64,8 @@ const route = useRoute()
           job: job.value,
           address: address.value,
           image: imageUrl,
-          service_id: serviceId.value
+          service_id: service.id,
+          project: service.title
         },
       ])
   
@@ -71,7 +75,7 @@ const route = useRoute()
     }
   
     // ✅ Redirect back or to the detail page
-    router.push('/services') // change this if needed
+    router.back() // change this if needed
   }
   </script>
 

@@ -1,5 +1,5 @@
 <template>
-  <footer class="p-4 text-center">
+  <!-- <footer class="p-4 text-center">
     <div>
       Made with ❤️ by
       <a
@@ -20,5 +20,5 @@
         <span>GitHub</span>
       </a>
     </div>
-  </footer>
+  </footer> -->
 </template>

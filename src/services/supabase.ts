@@ -274,6 +274,8 @@ const serviceData = [
     }
   ]
 
+
+
 async function uploadData() {
   for (const service of serviceData) {
     const { id, title, service_image, description, projects } = service

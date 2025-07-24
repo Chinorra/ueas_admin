@@ -2,6 +2,14 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { supabase } from '@/services/supabase'
+import { useServiceStore } from '@/stores/serviceStore'
+
+const serviceStore = useServiceStore()
+
+const goToCustomerCreate = () => {
+  serviceStore.setService(service.value) // 👈 Store it globally
+  router.push('/customers/new')
+}
 
 const route = useRoute()
 const router = useRouter()
@@ -118,7 +126,7 @@ const deleteService = async () => {
     error.value = `Failed to delete service: ${serviceDeleteError.message}`
   } else {
     // Success: Navigate back or show message
-    vueRouter.push('/services') // Change path to wherever you want to redirect
+    router.back() // Change path to wherever you want to redirect
   }
 }
 
@@ -236,8 +244,8 @@ onMounted(async () => {
 <div class="flex gap-4 py-4 overflow-x-auto">
   <!-- ➕ Add New Customer Card -->
   <div
-  @click="$router.push({ path: '/customers/new', query: { service_id: service.id } })"
-    class="min-w-[250px] cursor-pointer border-2 border-dashed border-gray-300 rounded-lg shadow flex flex-col items-center justify-center text-gray-400 hover:bg-gray-100 transition"
+  @click="goToCustomerCreate"
+    class="min-w-[250px] min-h-[450px] cursor-pointer border-2 border-dashed border-gray-300 rounded-lg shadow flex flex-col items-center justify-center text-gray-400 hover:bg-gray-100 transition"
   >
     <span class="text-4xl">＋</span>
     <p class="mt-2 font-semibold">Thêm khách hàng</p>

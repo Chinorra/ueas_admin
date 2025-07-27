@@ -4,8 +4,8 @@ import { useAuthStore } from "@/stores/auth";
 const router = useRouter();
 const { supabase } = useAuthStore();
 
-onMounted(() => {
-  if (supabase.auth.user()) {
+onMounted( async () => {
+  if (await supabase.auth.getUser()) {
     console.log(
       "arrived on callback page with an existing user, so going home"
     );

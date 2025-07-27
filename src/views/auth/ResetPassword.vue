@@ -21,7 +21,7 @@ const loading = ref(false);
 async function onSubmit() {
   const { supabase } = useAuthStore();
   loading.value = true;
-  const { error, data } = await supabase.auth.api.updateUser(resetToken, {
+  const { data, error } = await supabase.auth.updateUser({
     password: password.value,
   });
   console.log(error, data);

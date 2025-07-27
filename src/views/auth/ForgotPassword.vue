@@ -6,7 +6,7 @@ const loading = ref(false);
 async function onSubmit() {
   loading.value = true;
   const { supabase } = useAuthStore();
-  const { data, error } = await supabase.auth.api.resetPasswordForEmail(
+const { data, error } = await supabase.auth.resetPasswordForEmail(
     email.value,
     {
       redirectTo: `${window.location.origin}/resetpassword`,

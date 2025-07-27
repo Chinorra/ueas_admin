@@ -1,22 +1,19 @@
 <script lang="ts" setup>
 import { useAuthStore } from "@/stores/auth";
-const { supabase } = useAuthStore();
+import { ref, onMounted } from "vue";
 
-const reRoute = computed(() => {
-  if (supabase.auth.user())
-    return {
-      to: "/",
-      text: "Go Home",
-    };
-  return {
-    to: "/signin",
-    text: "Sign In",
-  };
+const { supabase } = useAuthStore();
+const reRoute = ref({ to: "/signin", text: "Sign In" });
+
+onMounted(async () => {
+  const { data } = await supabase.auth.getUser();
+  if (data.user) {
+    reRoute.value = { to: "/", text: "Go Home" };
+  }
 });
 </script>
+
 <template>
   <div class="self-center text-xl font-medium mb-4">404 - Page not found</div>
-  <router-link :to="reRoute.to" class="self-center">{{
-    reRoute.text
-  }}</router-link>
+  <router-link :to="reRoute.to" class="self-center">{{ reRoute.text }}</router-link>
 </template>

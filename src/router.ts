@@ -37,14 +37,11 @@ const router = createRouter({
           path: "/resetpassword",
           name: "resetPassword",
           component: () => import("@/views/auth/ResetPassword.vue"),
-          beforeEnter: (to) => {
-            // only allow navigation to reset password
-            // if we actually clicked a proper reset password link
-            // which provides the type=recovery hash key
+          beforeEnter: async (to) => {
             if (!to.hash.includes("type=recovery")) {
               const { supabase } = useAuthStore();
-              if (supabase.auth.user()) return "/";
-              return "/signin";
+              const { data } = await supabase.auth.getUser();
+              return data.user ? "/" : "/signin";
             }
           },
         },
@@ -53,28 +50,24 @@ const router = createRouter({
           name: "callback",
           component: () => import("@/views/auth/AuthCallback.vue"),
           beforeEnter: (to) => {
-            /* Parse the route hash into a dictionary */
             const hashDictionary = {} as any;
-            // first remove the actual '#' character
             const hash = to.hash.replace("#", "");
-            // split hash into key-value pairs
             hash.split("&").forEach((item) => {
-              // split 'key=value' into [key, value]
               const [key, value] = item.split("=");
-              // add to results
               hashDictionary[key] = value;
             });
 
-            if (
-              [
-                "access_token",
-                "expires_in",
-                "provider_token",
-                "refresh_token",
-                "token_type",
-              ].some((key) => !(key in hashDictionary))
-            )
+            const requiredKeys = [
+              "access_token",
+              "expires_in",
+              "provider_token",
+              "refresh_token",
+              "token_type",
+            ];
+
+            if (requiredKeys.some((key) => !(key in hashDictionary))) {
               return "/";
+            }
           },
         },
         {
@@ -84,7 +77,6 @@ const router = createRouter({
         },
       ],
     },
-
     {
       path: "/",
       component: () => import("@/layouts/DashboardLayout.vue"),
@@ -108,53 +100,57 @@ const router = createRouter({
           component: () => import("@/views/ServiceDetail.vue"),
         },
         {
-          path: '/customers/:id',
-          name: 'CustomerDetail',
-          component: () => import('@/views/CustomerDetail.vue'),
+          path: "/customers/:id",
+          name: "CustomerDetail",
+          component: () => import("@/views/CustomerDetail.vue"),
         },
         {
-          path: '/services/new',
-          name: 'ServiceCreate',
-          component: () => import('@/views/ServiceCreate.vue')
+          path: "/services/new",
+          name: "ServiceCreate",
+          component: () => import("@/views/ServiceCreate.vue"),
         },
         {
-          path: '/customers/new',
-          name: 'CustomerCreate',
-          component: () => import('@/views/CustomerCreate.vue')
-        }
+          path: "/customers/new",
+          name: "CustomerCreate",
+          component: () => import("@/views/CustomerCreate.vue"),
+        },
       ],
     },
   ],
 });
 
+/* ✅ Listen for auth state changes */
 const { supabase } = useAuthStore(pinia);
-supabase.auth.onAuthStateChange((event) => {
-  console.log(event);
-  if (event == "SIGNED_OUT") return router.push("/signin");
-  if (event == "SIGNED_IN") {
-    const routeName = router.currentRoute.value.name;
-    console.log("routeName", routeName);
+supabase.auth.onAuthStateChange((event, session) => {
+  console.log("Auth event:", event);
 
-    if (routeName == "callback") {
+  if (event === "SIGNED_OUT") {
+    router.push("/signin"); // ← don't return
+  }
+
+  if (event === "SIGNED_IN") {
+    const routeName = router.currentRoute.value.name;
+
+    if (routeName === "callback") {
       setTimeout(() => {
-        return router.push({ name: "home" });
+        router.push({ name: "home" }); // ← don't return
       }, 0);
     }
   }
 });
 
-router.beforeEach((to) => {
-  const { supabase } = useAuthStore();
 
-  if (to.meta.requiresAuth && !supabase.auth.user()) {
-    return {
-      path: "/signin",
-    };
+/* ✅ Async navigation guards to handle getUser */
+router.beforeEach(async (to) => {
+  const { supabase } = useAuthStore();
+  const { data } = await supabase.auth.getUser();
+  const user = data.user;
+
+  if (to.meta.requiresAuth && !user) {
+    return { path: "/signin" };
   }
-  if (to.meta.requiresNoAuth && supabase.auth.user()) {
-    return {
-      path: "/",
-    };
+  if (to.meta.requiresNoAuth && user) {
+    return { path: "/" };
   }
 });
 

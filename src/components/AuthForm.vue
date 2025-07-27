@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import { useAuthStore } from "@/stores/auth";
 import { Ref } from "vue";
-import { UserCredentials } from "@supabase/supabase-js";
 
 const props = defineProps<{
   signUp: boolean;
@@ -11,10 +10,11 @@ const props = defineProps<{
   passwordPlaceholder: string;
 }>();
 
-const credentials: Ref<UserCredentials> = ref({
+const credentials: Ref<{ email: string; password: string }> = ref({
   email: "",
   password: "",
 });
+
 
 const router = useRouter();
 
@@ -22,83 +22,40 @@ const emailLoading = ref(false);
 async function emailAuth() {
   emailLoading.value = true;
   const { supabase } = useAuthStore();
-  const { user, error } = props.signUp
+  const { data, error } = props.signUp
     ? await supabase.auth.signUp(credentials.value)
-    : await supabase.auth.signIn(credentials.value);
-  if (user) router.push("/");
+    : await supabase.auth.signInWithPassword(credentials.value);
+  if (data?.user) router.push("/");
   else if (error) {
     alert(error.message);
     emailLoading.value = false;
   }
 }
 
+async function signInWithProvider(provider: "github" | "google" | "twitter" | "facebook", loadingRef: Ref<boolean>) {
+  loadingRef.value = true;
+  const { supabase } = useAuthStore();
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider,
+    options: {
+      redirectTo: `${window.location.origin}/callback`,
+    },
+  });
+  if (error) {
+    alert(error.message);
+    loadingRef.value = false;
+  }
+}
+
 const gitHubLoading = ref(false);
-async function gitHubAuth() {
-  gitHubLoading.value = true;
-  const { supabase } = useAuthStore();
-  const { user, error } = await supabase.auth.signIn(
-    { provider: "github" },
-    {
-      redirectTo: `${window.location.origin}/callback`,
-    }
-  );
-  if (user) router.push("/");
-  else if (error) {
-    alert(error.message);
-    gitHubLoading.value = false;
-  }
-}
-
 const googleLoading = ref(false);
-async function googleAuth() {
-  googleLoading.value = true;
-  const { supabase } = useAuthStore();
-  const { user, error } = await supabase.auth.signIn(
-    { provider: "google" },
-    {
-      redirectTo: `${window.location.origin}/callback`,
-    }
-  );
-  if (user) router.push("/");
-  else if (error) {
-    alert(error.message);
-    googleLoading.value = false;
-  }
-}
-
 const twitterLoading = ref(false);
-async function twitterAuth() {
-  twitterLoading.value = true;
-  const { supabase } = useAuthStore();
-  const { user, error } = await supabase.auth.signIn(
-    { provider: "twitter" },
-    {
-      redirectTo: `${window.location.origin}/callback`,
-    }
-  );
-  if (user) router.push("/");
-  else if (error) {
-    alert(error.message);
-    twitterLoading.value = false;
-  }
-}
-
 const facebookLoading = ref(false);
-async function facebookAuth() {
-  facebookLoading.value = true;
-  const { supabase } = useAuthStore();
-  const { user, error } = await supabase.auth.signIn(
-    { provider: "facebook" },
-    {
-      redirectTo: `${window.location.origin}/callback`,
-    }
-  );
-  if (user) router.push("/");
-  else if (error) {
-    alert(error.message);
-    facebookLoading.value = false;
-  }
-}
+
+const gitHubAuth = () => signInWithProvider("github", gitHubLoading);
+const googleAuth = () => signInWithProvider("google", googleLoading);
+const twitterAuth = () => signInWithProvider("twitter", twitterLoading);
+const facebookAuth = () => signInWithProvider("facebook", facebookLoading);
 
 const loading = computed(
   () =>
@@ -109,6 +66,7 @@ const loading = computed(
     facebookLoading.value
 );
 </script>
+
 <template>
   <div>
     <h2 class="mb- text-2xl font-bold">

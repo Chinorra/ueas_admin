@@ -1,24 +1,29 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { supabase } from "@/services/supabase";
-import { User } from "@supabase/supabase-js";
 
-// Get session from supabase.auth.getSession()
-const {
-  data: { session },
-} = await supabase.auth.getSession();
-
-const user = session?.user as User;
-const metadata = user?.user_metadata;
-const name = ref(metadata?.nickname || user?.email || "");
-
+const name = ref("");
 const password = ref("");
-const nickname = ref(name.value);
-
+const nickname = ref("");
 const loading = ref(false);
 
-/* Change Password (v2 style) */
+onMounted(async () => {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  const user = session?.user;
+  const metadata = user?.user_metadata;
+  name.value = metadata?.nickname || user?.email || "";
+  nickname.value = name.value;
+});
+
 async function changePassword() {
+  if (!password.value || password.value.length < 6) {
+    alert("Password must be at least 6 characters.");
+    return;
+  }
+
   loading.value = true;
 
   const { error } = await supabase.auth.updateUser({
@@ -30,6 +35,7 @@ async function changePassword() {
   loading.value = false;
 }
 </script>
+
 
 <template>
   <h1 class="mb-2 text-3xl font-medium">Profile</h1>

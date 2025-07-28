@@ -4,8 +4,8 @@
     :sign-up="false"
     title="Welcome back"
     subtitle="Please enter your details"
-    email-placeholder="Enter your email"
-    password-placeholder="Enter your password"
+    email-placeholder="Nhập email"
+    password-placeholder="Nhập mâtk khẩu"
   >
    
   </AuthForm>

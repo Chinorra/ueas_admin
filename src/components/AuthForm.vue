@@ -97,7 +97,7 @@ const loading = computed(
         :disabled="loading"
         type="submit"
         class="bg-teal-700"
-        >{{ signUp ? "Sign Up" : "Sign In" }}</VButton
+        >{{ signUp ? "Đăng kí" : "Đăng nhập" }}</VButton
       >
     </form>
    

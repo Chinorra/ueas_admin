@@ -33,7 +33,7 @@ const { data, error } = await supabase.auth.resetPasswordForEmail(
         name="email"
         id="email"
         type="email"
-        placeholder="Enter your email"
+        placeholder="Nhập email"
         v-model="email"
       />
 

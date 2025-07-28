@@ -67,7 +67,7 @@
         .getPublicUrl(fileName)
 
 
-        imageUrl = data.publicURL
+        imageUrl = data.publicUrl
     }
 
     // Update customer record
@@ -86,6 +86,7 @@
     } else {
         isEditing.value = false
         selectedFile.value = null
+        router.back()
     }
     }
 

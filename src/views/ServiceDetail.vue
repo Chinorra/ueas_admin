@@ -80,7 +80,7 @@ const updateService = async () => {
         .getPublicUrl(fileName)
 
 
-        imageUrl = data.publicURL
+        imageUrl = data.publicUrl
     }
 
   const { error: updateError } = await supabase
@@ -97,7 +97,7 @@ const updateService = async () => {
   } else {
     isEditing.value = false
     selectedFile.value = null
-
+    router.back()
   }
 }
 

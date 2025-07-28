@@ -43,16 +43,21 @@ const route = useRoute()
       const filePath = `customers/${filename}`
   
       const { error: uploadError } = await supabase.storage
-        .from('image') // <-- your bucket name
-        .upload(filePath, imageFile.value)
-  
-      if (uploadError) {
-        error.value = 'Image upload failed: ' + uploadError.message
-        return
-      }
-  
-      const { data } = supabase.storage.from('image').getPublicUrl(filePath)
-      imageUrl = data.publicURL
+  .from("image")
+  .upload(filePath, imageFile.value);
+
+if (uploadError) {
+  error.value = "Image upload failed: " + uploadError.message;
+  return;
+}
+
+// ✅ Now get the public URL
+const { data: publicData } = supabase.storage
+  .from("image")
+  .getPublicUrl(filePath);
+
+imageUrl = publicData.publicUrl; // ✅ `publicUrl` (lowercase "u")
+
     }
   
     // 2. Insert customer into database

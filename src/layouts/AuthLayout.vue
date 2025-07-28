@@ -5,8 +5,7 @@
       class="dark:bg-text-slate-50 mx-auto max-h-full rounded-lg bg-slate-50 py-8 px-4 text-slate-900 dark:bg-slate-900 dark:text-slate-50 sm:px-6 md:p-8 lg:p-12"
     >
       <div class="flex flex-col items-start">
-        <h1 class="mx-auto mb-4 text-4xl font-bold">Vuepabase</h1>
-        <BrandLogo class="mx-auto mb-8 w-32" />
+        <h1 class="mx-auto mb-4 text-4xl font-bold">Đăng nhập</h1>
 
         <router-view />
       </div>

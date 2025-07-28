@@ -69,12 +69,7 @@ const loading = computed(
 
 <template>
   <div>
-    <h2 class="mb- text-2xl font-bold">
-      {{ title }}
-    </h2>
-    <p class="mb-4 text-sm text-slate-500">
-      {{ subtitle }}
-    </p>
+
     <form class="flex w-full flex-col items-start" @submit.prevent="emailAuth">
       <VLabel for="email">Email</VLabel>
       <VInput
@@ -87,7 +82,7 @@ const loading = computed(
         :placeholder="emailPlaceholder"
         v-model="(credentials.email as string)"
       />
-      <VLabel for="password">Password</VLabel>
+      <VLabel for="password">Mật khẩu</VLabel>
       <VPasswordInput
         :disabled="loading"
         class="mb-4 w-full"
@@ -97,13 +92,6 @@ const loading = computed(
         v-model="(credentials.password as string)"
       />
 
-      <router-link
-        v-if="!signUp"
-        to="/forgotpassword"
-        class="mb-4 text-sm font-bold"
-        >Forgot your password?</router-link
-      >
-
       <VButton
         :loading="emailLoading"
         :disabled="loading"
@@ -112,44 +100,7 @@ const loading = computed(
         >{{ signUp ? "Sign Up" : "Sign In" }}</VButton
       >
     </form>
-    <div class="flex space-x-2">
-      <VButton
-        :loading="gitHubLoading"
-        :disabled="loading"
-        type="button"
-        class="flex items-center justify-center bg-black"
-        @click="gitHubAuth"
-      >
-        <i-mdi-github class="h-5 w-5" />
-      </VButton>
-      <VButton
-        :loading="googleLoading"
-        :disabled="loading"
-        type="button"
-        class="flex items-center justify-center bg-[#EA4335]"
-        @click="googleAuth"
-      >
-        <i-mdi-google class="h-5 w-5" />
-      </VButton>
-      <VButton
-        :loading="twitterLoading"
-        :disabled="loading"
-        type="button"
-        class="flex items-center justify-center bg-[#1DA1F2]"
-        @click="twitterAuth"
-      >
-        <i-mdi-twitter class="h-5 w-5" />
-      </VButton>
-      <VButton
-        :loading="facebookLoading"
-        :disabled="loading"
-        type="button"
-        class="flex items-center justify-center bg-[#425F9C]"
-        @click="facebookAuth"
-      >
-        <i-mdi-facebook class="h-5 w-5" />
-      </VButton>
-    </div>
+   
 
     <slot name="actions" />
   </div>

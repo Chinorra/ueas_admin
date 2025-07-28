@@ -86,7 +86,7 @@
     }
   
     const { data } = supabase.storage.from('image').getPublicUrl(filePath)
-    const imageUrl = data.publicURL
+    const imageUrl = data.publicUrl
   
     // 🖊️ Insert into DB
     const { error: insertError } = await supabase.from('services').insert([

@@ -114,6 +114,21 @@ const router = createRouter({
           name: "CustomerCreate",
           component: () => import("@/views/CustomerCreate.vue"),
         },
+        {
+          path: "/orders",
+          name: "Orders",
+          component: () => import("@/views/OrderView.vue"),
+        },
+        {
+          path: "/orders/:id",
+          name: "OrderDetail",
+          component: () => import("@/views/OrderDetail.vue"),
+        },
+        {
+          path: "/orders/new",
+          name: "OrderCreate",
+          component: () => import("@/views/OrderCreate.vue"),
+        },
       ],
     },
   ],

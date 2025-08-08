@@ -76,6 +76,11 @@ const navLinks = [
     icon: "heroicons-outline:home",
   },
   {
+    text: "Orders",
+    to: "/orders",
+    icon: "heroicons-outline:clipboard-list",
+  },
+  {
     text: "Profile",
     to: "/profile",
     icon: "heroicons-outline:user",

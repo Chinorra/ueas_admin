@@ -8,7 +8,7 @@ const error = ref<string | null>(null);
 
 onMounted(async () => {
   const { data, error: fetchError } = await supabase
-    .from("orders")
+    .from("order_detail")
     .select(
       `
       *,
@@ -20,7 +20,12 @@ onMounted(async () => {
   if (fetchError) {
     error.value = fetchError.message;
   } else {
-    orders.value = data ?? [];
+    // Map the joined data to the expected structure
+    orders.value = data?.map(order => ({
+      ...order,
+      customer_name: order.customer_name || "",
+      service_name: order.services?.title || "",
+    })) ?? [];
   }
 
   loading.value = false;

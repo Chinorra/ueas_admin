@@ -10,28 +10,93 @@ const order = ref<any>({});
 const loading = ref(true);
 const error = ref<string | null>(null);
 const isEditing = ref(false);
+const originalData = ref<any>({});
+
+const startEditing = () => {
+  // Store original values before editing
+  originalData.value = {
+    customer_name: order.value.customer_name,
+    customer_phone: order.value.customer_phone,
+    customer_email: order.value.customer_email,
+    customer_address: order.value.customer_address,
+    total_amount: order.value.total_amount,
+    status: order.value.status,
+    note: order.value.note,
+  };
+  isEditing.value = true;
+};
+
+const cancelEditing = () => {
+  // Restore original values
+  order.value.customer_name = originalData.value.customer_name;
+  order.value.customer_phone = originalData.value.customer_phone;
+  order.value.customer_email = originalData.value.customer_email;
+  order.value.customer_address = originalData.value.customer_address;
+  order.value.total_amount = originalData.value.total_amount;
+  order.value.status = originalData.value.status;
+  order.value.note = originalData.value.note;
+  isEditing.value = false;
+};
 
 const updateOrder = async () => {
-  const { error: updateError } = await supabase
-    .from("orders")
-    .update({
-      customer_name: order.value.customer_name,
-      customer_phone: order.value.customer_phone,
-      customer_email: order.value.customer_email,
-      customer_address: order.value.customer_address,
-      service_description: order.value.service_description,
-      total_amount: order.value.total_amount,
-      status: order.value.status,
-      notes: order.value.notes,
-    })
-    .eq("id", order.value.id);
+  try {
+    // Check which specific fields have changed
+    const customerChanges = {
+      customer_name: order.value.customer_name !== originalData.value.customer_name,
+      customer_phone: order.value.customer_phone !== originalData.value.customer_phone,
+      customer_email: order.value.customer_email !== originalData.value.customer_email,
+      customer_address: order.value.customer_address !== originalData.value.customer_address,
+    };
 
-  if (updateError) {
-    error.value = updateError.message;
-  } else {
+    const orderChanges = {
+      total_amount: order.value.total_amount !== originalData.value.total_amount,
+      status: order.value.status !== originalData.value.status,
+      note: order.value.note !== originalData.value.note,
+    };
+
+    const hasCustomerChanges = Object.values(customerChanges).some(change => change);
+    const hasOrderChanges = Object.values(orderChanges).some(change => change);
+
+    if (!hasCustomerChanges && !hasOrderChanges) {
+      // No changes detected, just exit edit mode
+      isEditing.value = false;
+      return;
+    }
+
+    // Prepare update data based on what actually changed
+    const updateData: any = {};
+
+    // Only include customer fields that changed
+    if (hasCustomerChanges) {
+      if (customerChanges.customer_name) updateData.customer_name = order.value.customer_name;
+      if (customerChanges.customer_phone) updateData.customer_phone = order.value.customer_phone;
+      if (customerChanges.customer_email) updateData.customer_email = order.value.customer_email;
+      if (customerChanges.customer_address) updateData.customer_address = order.value.customer_address;
+    }
+
+    // Only include order fields that changed
+    if (hasOrderChanges) {
+      if (orderChanges.total_amount) updateData.total_amount = order.value.total_amount;
+      if (orderChanges.status) updateData.status = order.value.status;
+      if (orderChanges.note) updateData.note = order.value.note;
+    }
+
+    // Update only the changed fields
+    const { error: orderError } = await supabase
+      .from("order_detail")
+      .update(updateData)
+      .eq("id", order.value.id);
+
+    if (orderError) {
+      error.value = "Failed to update order: " + orderError.message;
+      return;
+    }
+
+    // Success - exit edit mode and refresh data
     isEditing.value = false;
-    // Optionally refresh the order data
     await fetchOrder();
+  } catch (err) {
+    error.value = "An unexpected error occurred: " + (err as Error).message;
   }
 };
 
@@ -39,15 +104,25 @@ const deleteOrder = async () => {
   const confirmDelete = confirm("Are you sure you want to delete this order?");
   if (!confirmDelete) return;
 
-  const { error: deleteError } = await supabase
-    .from("orders")
-    .delete()
-    .eq("id", order.value.id);
+  try {
+    // Delete order detail first
+    const { error: orderDeleteError } = await supabase
+      .from("order_detail")
+      .delete()
+      .eq("id", order.value.id);
 
-  if (deleteError) {
-    error.value = `Failed to delete order: ${deleteError.message}`;
-  } else {
+    if (orderDeleteError) {
+      error.value = `Failed to delete order: ${orderDeleteError.message}`;
+      return;
+    }
+
+    // Optionally delete customer if no other orders exist
+    // You might want to keep customers for future orders
+    // For now, we'll just delete the order detail
+    
     router.push("/orders");
+  } catch (err) {
+    error.value = "An unexpected error occurred: " + (err as Error).message;
   }
 };
 
@@ -55,7 +130,7 @@ const fetchOrder = async () => {
   const { id } = route.params;
 
   const { data: orderData, error: orderError } = await supabase
-    .from("orders")
+    .from("order_detail")
     .select(
       `
       *,
@@ -71,7 +146,26 @@ const fetchOrder = async () => {
     return;
   }
 
-  order.value = orderData;
+  // Map the joined data to the expected structure
+  order.value = {
+    ...orderData,
+    customer_name: orderData.customer_name || "",
+    customer_phone: orderData.customer_phone || "",
+    customer_email: orderData.customer_email || "",
+    customer_address: orderData.customer_address || "",
+  };
+  
+  // Initialize original data for change detection
+  originalData.value = {
+    customer_name: order.value.customer_name,
+    customer_phone: order.value.customer_phone,
+    customer_email: order.value.customer_email,
+    customer_address: order.value.customer_address,
+    total_amount: order.value.total_amount,
+    status: order.value.status,
+    note: order.value.note,
+  };
+  
   loading.value = false;
 };
 
@@ -88,7 +182,7 @@ onMounted(fetchOrder);
         <div class="flex gap-2">
           <button
             v-if="!isEditing"
-            @click="isEditing = true"
+            @click="startEditing"
             class="rounded bg-blue-500 px-4 py-2 text-white transition hover:bg-blue-600"
           >
             Edit
@@ -101,7 +195,7 @@ onMounted(fetchOrder);
               Save
             </button>
             <button
-              @click="isEditing = false"
+              @click="cancelEditing"
               class="rounded bg-gray-500 px-4 py-2 text-white transition hover:bg-gray-600"
             >
               Cancel
@@ -184,18 +278,7 @@ onMounted(fetchOrder);
                 class="w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-gray-700"
               />
             </div>
-            <div>
-              <label class="mb-1 block text-sm font-medium text-gray-700"
-                >Service Description</label
-              >
-              <textarea
-                v-model="order.service_description"
-                :readonly="!isEditing"
-                rows="3"
-                class="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                :class="{ 'bg-gray-50': !isEditing }"
-              ></textarea>
-            </div>
+
             <div>
               <label class="mb-1 block text-sm font-medium text-gray-700"
                 >Total Amount</label
@@ -229,7 +312,7 @@ onMounted(fetchOrder);
                 >Notes</label
               >
               <textarea
-                v-model="order.notes"
+                v-model="order.note"
                 :readonly="!isEditing"
                 rows="3"
                 class="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"

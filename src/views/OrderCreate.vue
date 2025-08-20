@@ -227,30 +227,28 @@ const createOrder = async () => {
     return;
   }
 
-  try {
-    const { error: insertError } = await supabase.from("orders").insert([
-      {
-        customer_name: customerName.value,
-        customer_phone: customerPhone.value,
-        customer_email: customerEmail.value || null,
-        customer_address: customerAddress.value,
-        service_id: selectedService.value.id,
-        service_description: serviceDescription.value,
-        total_amount: parseFloat(totalAmount.value),
-        status: status.value,
-        notes: notes.value || null,
-      },
-    ]);
+    try {
+    // Create order detail
+    const { error: orderError } = await supabase
+      .from("order_detail")
+      .insert([
+        {
+          service_id: selectedService.value.id,
+          total_amount: parseFloat(totalAmount.value),
+          status: status.value,
+          note: notes.value || null,
+        },
+      ]);
 
-    if (insertError) {
-      error.value = "Failed to create order: " + insertError.message;
+    if (orderError) {
+      error.value = "Failed to create order: " + orderError.message;
       return;
     }
 
     // Success - redirect to orders list
     router.push("/orders");
   } catch (err) {
-    error.value = "An unexpected error occurred: " + err.message;
+    error.value = "An unexpected error occurred: " + (err as Error).message;
   }
 };
 </script>

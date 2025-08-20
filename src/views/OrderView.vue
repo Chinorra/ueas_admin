@@ -39,14 +39,7 @@ onMounted(async () => {
   <div v-else-if="error" class="text-red-500">{{ error }}</div>
   <div v-else>
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      <!-- ➕ Add New Order Card -->
-      <router-link
-        to="/orders/new"
-        class="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 p-4 text-gray-400 shadow transition hover:scale-[1.02] hover:bg-gray-50"
-      >
-        <span class="text-5xl">＋</span>
-        <p class="mt-2 font-semibold">Thêm đơn hàng</p>
-      </router-link>
+
 
       <!-- Order Cards -->
       <router-link

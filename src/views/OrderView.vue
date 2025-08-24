@@ -6,26 +6,21 @@ const orders = ref<any[]>([]);
 const loading = ref(true);
 const error = ref<string | null>(null);
 
+const formatTime = (hour: number, minute: number, isAm: boolean) => {
+  const amPm = isAm ? 'AM' : 'PM';
+  return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')} ${amPm}`;
+};
+
 onMounted(async () => {
   const { data, error: fetchError } = await supabase
-    .from("order_detail")
-    .select(
-      `
-      *,
-      services(title)
-    `
-    )
-    .order("created_at", { ascending: false });
+    .from("orders")
+    .select("*")
+    .order("date", { ascending: false });
 
   if (fetchError) {
     error.value = fetchError.message;
   } else {
-    // Map the joined data to the expected structure
-    orders.value = data?.map(order => ({
-      ...order,
-      customer_name: order.customer_name || "",
-      service_name: order.services?.title || "",
-    })) ?? [];
+    orders.value = data || [];
   }
 
   loading.value = false;
@@ -51,32 +46,17 @@ onMounted(async () => {
         <div class="mb-3">
           <div class="mb-2 flex items-start justify-between">
             <span class="text-sm text-gray-500">Order #{{ order.id }}</span>
-            <span
-              class="rounded-full px-2 py-1 text-xs"
-              :class="{
-                'bg-green-100 text-green-800': order.status === 'completed',
-                'bg-yellow-100 text-yellow-800': order.status === 'pending',
-                'bg-blue-100 text-blue-800': order.status === 'processing',
-                'bg-red-100 text-red-800': order.status === 'cancelled',
-              }"
-            >
-              {{ order.status }}
+            <span class="text-xs text-gray-500">
+              {{ formatTime(order.hour, order.minute, order.is_am) }}
             </span>
           </div>
           <h2 class="mb-1 text-lg font-semibold">{{ order.customer_name }}</h2>
-          <p class="mb-2 text-sm text-gray-600">
-            {{ order.services?.title || order.service_name }}
-          </p>
-          <p class="text-sm font-medium">
-            {{
-              new Intl.NumberFormat("vi-VN", {
-                style: "currency",
-                currency: "VND",
-              }).format(order.total_amount)
-            }}
-          </p>
+          <p class="mb-2 text-sm text-gray-600">{{ order.description || 'No description' }}</p>
+          <p class="text-sm text-gray-500">{{ order.phone_number }}</p>
+          <p class="text-sm text-gray-500">{{ order.email || 'No email' }}</p>
+          <p class="text-sm text-gray-500">{{ order.address || 'No address' }}</p>
           <p class="mt-1 text-xs text-gray-500">
-            {{ new Date(order.created_at).toLocaleDateString("vi-VN") }}
+            {{ new Date(order.date).toLocaleDateString("vi-VN") }}
           </p>
         </div>
       </router-link>
